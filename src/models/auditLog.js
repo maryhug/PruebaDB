@@ -36,3 +36,5 @@ auditLogSchema.index({ entity: 1, action: 1 });
 auditLogSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model("AuditLog", auditLogSchema);
+
+// https://github.com/Achnerr/coranegrot

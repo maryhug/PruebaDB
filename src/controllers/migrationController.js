@@ -4,6 +4,58 @@ const csv = require("csv-parser");
 const pool = require("../config/postgres");
 const MigrationLog = require("../models/migrationLog");
 
+const DDL = `
+    CREATE TABLE IF NOT EXISTS categories (
+        id_category   SERIAL PRIMARY KEY,
+        name          VARCHAR(100) NOT NULL UNIQUE,
+        created_at    TIMESTAMP DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS suppliers (
+        id_supplier   SERIAL PRIMARY KEY,
+        name          VARCHAR(255) NOT NULL,
+        email         VARCHAR(255) NOT NULL UNIQUE,
+        created_at    TIMESTAMP DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS products (
+        id_product    SERIAL PRIMARY KEY,
+        sku           VARCHAR(50)  NOT NULL UNIQUE,
+        name          VARCHAR(255) NOT NULL,
+        unit_price    NUMERIC(12,2) NOT NULL CHECK (unit_price >= 0),
+        id_category   INT NOT NULL REFERENCES categories(id_category),
+        id_supplier   INT NOT NULL REFERENCES suppliers(id_supplier),
+        created_at    TIMESTAMP DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS customers (
+        id_customer   SERIAL PRIMARY KEY,
+        name          VARCHAR(255) NOT NULL,
+        email         VARCHAR(255) NOT NULL UNIQUE,
+        address       TEXT,
+        phone         VARCHAR(20),
+        created_at    TIMESTAMP DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS orders (
+        id_order         SERIAL PRIMARY KEY,
+        transaction_code VARCHAR(50) NOT NULL UNIQUE,
+        order_date       DATE NOT NULL,
+        id_customer      INT NOT NULL REFERENCES customers(id_customer),
+        created_at       TIMESTAMP DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS order_items (
+        id_order_item   SERIAL PRIMARY KEY,
+        id_order        INT NOT NULL REFERENCES orders(id_order) ON DELETE CASCADE,
+        id_product      INT NOT NULL REFERENCES products(id_product),
+        quantity        INT NOT NULL CHECK (quantity > 0),
+        unit_price      NUMERIC(12,2) NOT NULL CHECK (unit_price >= 0),
+        total_line      NUMERIC(14,2) NOT NULL CHECK (total_line >= 0),
+        created_at      TIMESTAMP DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_products_category   ON products(id_category);
+    CREATE INDEX IF NOT EXISTS idx_products_supplier   ON products(id_supplier);
+    CREATE INDEX IF NOT EXISTS idx_orders_customer     ON orders(id_customer);
+    CREATE INDEX IF NOT EXISTS idx_order_items_order   ON order_items(id_order);
+    CREATE INDEX IF NOT EXISTS idx_order_items_product ON order_items(id_product);
+`;
+
 async function getOrCreate(table, uniqueCol, uniqueVal, insertCols, insertVals) {
     const select = await pool.query(
         `SELECT * FROM ${table} WHERE ${uniqueCol} = $1`,
@@ -35,6 +87,8 @@ async function runMigration(_req, res, next) {
     };
 
     try {
+        await pool.query(DDL);
+
         await new Promise((resolve, reject) => {
             fs.createReadStream(csvPath)
                 .pipe(csv())
@@ -113,6 +167,7 @@ async function runMigration(_req, res, next) {
             message: `Migration ${status}: ${rows.length} rows processed in ${duration}ms`,
             summary: { inserted: counters.inserted, skipped_duplicates: counters.skipped },
             errors_count: errors.length,
+            errors_sample: errors.slice(0, 5),
             migration_log_id: log._id,
         });
     } catch (err) {
