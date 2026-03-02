@@ -209,3 +209,71 @@ Header: x-user: admin@megastore.com
 | GET | `/api/reports/audit-logs` | Consult audit logs. Filters: `?entity=product`, `?action=DELETE` |
 
 ---
+
+
+
+
+
+
+
+
+## Data Model Justification
+
+### PostgreSQL — Why Relational?
+
+Business data (customers, products, suppliers, orders) has **well-defined relationships** and requires **ACID transactions**, **referential integrity**, and **complex JOINs** for reporting. A relational engine is the natural choice.
+
+#### Normalization Process (1NF → 3NF)
+
+**Starting Point (0NF):** The original CSV file has one flat row per order line, mixing customer, product, supplier, and transaction data — full of redundancy.
+
+**1NF — Eliminate Repeating Groups:**
+- Each cell has an atomic value (already fulfilled in the CSV structure).
+
+- Each row is uniquely identified by `(transaction_id, product_sku)`.
+
+**2NF — Eliminate Partial Dependencies:**
+- `customer_name`, `customer_email`, `customer_address`, `customer_phone` depend only on the customer, not the full composite key → extracted to the **`customers`** table.
+
+- `supplier_name`, `supplier_email` depend only on the supplier → extracted to **`suppliers`**.
+
+- `product_name`, `unit_price`, `product_category` depend only on the `product_sku` → extracted to **`products`**.
+
+**3NF — Eliminate Transitive Dependencies:**
+- `product_category` is a property of the product, but describes a *category entity* → extracted to **`categories`** with its own primary key.
+
+`3NF` - The `date` and `customer` fields depend on the `transaction_id` (order header), not on the individual lines → extracted to **`orders`**.
+
+- The individual lines (quantity, unit price, total) form the **`order_items`** table.
+#### Esquema SQL Final (6 tablas, 3FN):
+
+| Tabla | Proposito | Restriccion Clave |
+|-------|-----------|-------------------|
+| `categories` | Clasificacion de productos | `name UNIQUE` |
+| `suppliers` | Datos maestros de proveedores | `email UNIQUE` |
+| `products` | Catalogo de productos | `sku UNIQUE`, FK → categories, suppliers |
+| `customers` | Datos maestros de clientes | `email UNIQUE` |
+| `orders` | Cabeceras de transaccion | `transaction_code UNIQUE`, FK → customers |
+| `order_items` | Lineas de detalle por orden | FK → orders, products |
+
+### MongoDB — Why NoSQL?
+
+Two collections are stored in MongoDB, each for a clear architectural reason:
+
+#### `audit_logs` — Why Embedded Snapshots?
+
+- **Frequent Writes, Infrequent Reads**: Audit logs are appended to each DELETE but are rarely queried in bulk.
+
+- **Schema Flexibility**: The `snapshot` field stores the complete state of the entity at the time of its deletion. Since different entities (products, customers) have different structures, embedding the snapshot avoids a rigid schema.
+
+- **No Need for JOINs**: When auditing, you need the complete picture in a single document — who, what, when, and the complete deleted record. Embedding achieves this with a single read.
+
+- **Referencing Would Be Useless**: The original SQL record is deleted, so a reference (foreign key) would point to nothing.
+
+#### `migration_logs` — Why embedded counters?
+
+- **Self-contained report**: Each migration run is a single document with counters for inserted/skipped data per table, error array, and time.
+
+- **Flexible error array**: Each migration can produce a variable number of errors with different structures — ideal for MongoDB's flexible arrays.
+
+- **No relation to other entities**: Migration logs are operational metadata, not business data.
