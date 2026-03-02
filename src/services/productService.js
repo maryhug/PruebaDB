@@ -1,6 +1,8 @@
 const pool = require("../config/postgres");
 const AuditLog = require("../models/auditLog");
 
+// Definimos una consulta SQL base que une las tablas de productos,
+// categorías y proveedores para obtener toda la información relevante de un producto en una sola consulta.
 const SQL_BASE = `
   SELECT p.id_product, p.sku, p.name, p.unit_price,
          c.id_category, c.name AS category,
@@ -11,6 +13,8 @@ const SQL_BASE = `
 `
 ;
 
+// En la función getAll, permitimos filtrar por categoría y proveedor utilizando consultas parametrizadas para evitar inyecciones SQL.
+// También implementamos opciones de ordenamiento por precio ascendente o descendente.
 async function getAll(req, res, next) {
     try {
         const { category, supplier, sort } = req.query;
@@ -41,6 +45,7 @@ async function getAll(req, res, next) {
     }
 }
 
+// En la función getById, si el producto no se encuentra, respondemos con un error 404 para indicar que el recurso no existe.
 async function getById(req, res, next) {
     try {
         const { id } = req.params;
@@ -52,19 +57,38 @@ async function getById(req, res, next) {
     }
 }
 
+// Al crear un nuevo producto, validamos que se proporcionen todos los campos requeridos. Si falta alguno, respondemos con un error 400.
+// Si el SKU ya existe, respondemos con un error 409 para indicar un conflicto de datos.
+// Después de insertar el producto, registramos un log de auditoría con la acción "CREATE" y el snapshot del producto recién creado.
 async function create(req, res, next) {
     try {
         const { sku, name, unit_price, id_category, id_supplier } = req.body;
         if (!sku || !name || unit_price == null || !id_category || !id_supplier) {
-            return res.status(400).json({ ok: false, error: "Missing required fields: sku, name, unit_price, id_category, id_supplier" });
+            return res.status(400).json({
+                ok: false,
+                error: "Missing required fields: sku, name, unit_price, id_category, id_supplier",
+            });
         }
 
         const { rows } = await pool.query(
             `INSERT INTO products (sku, name, unit_price, id_category, id_supplier)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+             VALUES ($1, $2, $3, $4, $5)
+                 RETURNING *`,
             [sku, name, unit_price, id_category, id_supplier]
         );
-        res.status(201).json({ ok: true, data: rows[0] });
+
+        const created = rows[0];
+
+        await AuditLog.create({
+            entity: "product",
+            action: "CREATE",
+            entity_id: created.id_product,
+            snapshot: created,
+            performed_by: req.headers["x-user"] || "anonymous",
+            metadata: { ip: req.ip },
+        });
+
+        res.status(201).json({ ok: true, data: created });
     } catch (err) {
         if (err.code === "23505") {
             return res.status(409).json({ ok: false, error: "Product with this SKU already exists" });
@@ -73,6 +97,9 @@ async function create(req, res, next) {
     }
 }
 
+// En la función de actualización, utilizamos COALESCE para permitir actualizaciones parciales sin requerir todos los campos.
+// Antes de realizar la actualización, obtenemos el estado actual del producto para registrar un log de auditoría con el snapshot antes del cambio.
+// Esto nos permite tener un historial completo de las modificaciones realizadas a cada producto.
 async function update(req, res, next) {
     try {
         const { id } = req.params;
@@ -91,6 +118,18 @@ async function update(req, res, next) {
        WHERE id_product = $6 RETURNING *`,
             [sku, name, unit_price, id_category, id_supplier, id]
         );
+        const snapshot = existing.rows[0];
+
+        await AuditLog.create({
+            entity: "product",
+            action: "UPDATE",
+            entity_id: id,
+            snapshot,
+            performed_by: req.headers["x-user"] || "anonymous",
+            metadata: { ip: req.ip },
+        });
+
+
         res.json({ ok: true, data: rows[0] });
     } catch (err) {
         if (err.code === "23505") {
@@ -100,6 +139,8 @@ async function update(req, res, next) {
     }
 }
 
+// Cuando se elimina un producto, también eliminamos las referencias en order_items para mantener la integridad referencial.
+// Además, registramos un log de auditoría con el estado del producto antes de la eliminación para tener un historial completo de cambios.
 async function remove(req, res, next) {
     try {
         const { id } = req.params;

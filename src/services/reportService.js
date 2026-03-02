@@ -1,6 +1,7 @@
 const pool = require("../config/postgres");
 const AuditLog = require("../models/auditLog");
 
+// Reportes y análisis avanzados para insights de negocio
 async function supplierAnalysis(_req, res, next) {
     try {
         const { rows } = await pool.query(`
@@ -23,6 +24,7 @@ async function supplierAnalysis(_req, res, next) {
     }
 }
 
+// Para el historial de un cliente, obtenemos primero la información del cliente y luego sus órdenes con los detalles de cada producto comprado.
 async function customerHistory(req, res, next) {
     try {
         const { id } = req.params;
@@ -91,6 +93,8 @@ async function customerHistory(req, res, next) {
     }
 }
 
+// Para obtener los productos más vendidos por categoría,
+// hacemos una consulta que agrupa por producto dentro de la categoría y ordena por el total de ingresos generados.
 async function topProductsByCategory(req, res, next) {
     try {
         const { category } = req.query;
@@ -120,6 +124,7 @@ async function topProductsByCategory(req, res, next) {
     }
 }
 
+// Para los logs de auditoría, permitimos filtrar por entidad y acción, y limitamos la cantidad de resultados para evitar sobrecargar la respuesta.
 async function getAuditLogs(req, res, next) {
     try {
         const { entity, action, limit = 50 } = req.query;

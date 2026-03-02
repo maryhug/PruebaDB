@@ -5,6 +5,7 @@ const csv = require("csv-parser");
 const pool = require("../config/postgres");
 const MigrationLog = require("../models/migrationLog");
 
+// DDL para crear tablas y relaciones, con índices para mejorar rendimiento en joins y búsquedas frecuentes
 const DDL = `
     CREATE TABLE IF NOT EXISTS categories (
         id_category   SERIAL PRIMARY KEY,
@@ -59,6 +60,8 @@ const DDL = `
     console.log("(OK) DDL for migration\n")
 ;
 
+// Función genérica para obtener o crear un registro basado en un valor único, evitando duplicados y simplificando la lógica de inserción con validación de datos.
+// Retorna el registro y un flag indicando si fue creado o ya existía.
 async function getOrCreate(table, uniqueCol, uniqueVal, insertCols, insertVals) {
     const select = await pool.query(
         `SELECT * FROM ${table} WHERE ${uniqueCol} = $1`,
@@ -74,6 +77,8 @@ async function getOrCreate(table, uniqueCol, uniqueVal, insertCols, insertVals) 
     return { row: insert.rows[0], created: true };
 }
 
+// Función principal para ejecutar la migración desde un archivo CSV. Lee el archivo, procesa cada fila,
+// maneja relaciones entre tablas y registra un log detallado de la migración, incluyendo errores y estadísticas de inserción.
 async function runMigration(_req, res, next) {
     const startTime = Date.now();
     const csvPath = path.resolve(process.env.CSV_PATH || "./data/AM-prueba-desempeno-data_m4.csv");

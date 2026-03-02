@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+// Conexión a MongoDB usando Mongoose.
+// La URI y el nombre de la base de datos se obtienen de las variables de entorno.
 async function connectMongo() {
     const uri = process.env.MONGODB_URI;
     const dbName = process.env.MONGODB_DB || "perfomanceTest";
@@ -10,8 +12,3 @@ async function connectMongo() {
 
 module.exports = connectMongo;
 exports.connectMongo = connectMongo;
-
-
-/*/*/
-/*/*/
-

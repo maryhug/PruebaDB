@@ -1,5 +1,7 @@
 require('dotenv').config();
 
+// Configuración de variables de entorno para la aplicación.
+// Se cargan desde un archivo .env y se proporcionan valores predeterminados para desarrollo local.
 module.exports = {
     PORT: process.env.PORT || 3000,
 

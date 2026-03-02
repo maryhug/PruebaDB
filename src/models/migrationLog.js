@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
 
+// Este esquema registra los detalles de cada migración, incluyendo el nombre del archivo, el número total de filas procesadas,
+// cuántas filas se insertaron por entidad, cuántas se saltaron por ser duplicados,
+// cualquier error encontrado, la duración de la migración y su estado final (éxito, parcial o fallo). Esto permitirá un seguimiento detallado
 const migrationLogSchema = new mongoose.Schema(
     {
         filename: { type: String, required: true },
