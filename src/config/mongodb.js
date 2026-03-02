@@ -5,8 +5,13 @@ async function connectMongo() {
     const dbName = process.env.MONGODB_DB || "perfomanceTest";
 
     await mongoose.connect(uri, { dbName });
-    console.log(`MongoDB connected → ${dbName}`);
+    console.log(`(OK) MongoDB connected → ${dbName}`);
 }
 
 module.exports = connectMongo;
 exports.connectMongo = connectMongo;
+
+
+/*/*/
+/*/*/
+

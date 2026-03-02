@@ -1,4 +1,5 @@
 const fs = require("fs");
+
 const path = require("path");
 const csv = require("csv-parser");
 const pool = require("../config/postgres");
@@ -55,7 +56,7 @@ const DDL = `
     CREATE INDEX IF NOT EXISTS idx_order_items_order   ON order_items(id_order);
     CREATE INDEX IF NOT EXISTS idx_order_items_product ON order_items(id_product);
 `
-console.log('PostgreSQL schema ready (3NF)');
+    console.log("(OK) DDL for migration\n")
 ;
 
 async function getOrCreate(table, uniqueCol, uniqueVal, insertCols, insertVals) {

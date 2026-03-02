@@ -19,7 +19,9 @@ const migrationLogSchema = new mongoose.Schema(
             customers: Number,
             orders: Number,
         },
-        errors: [{ row: Number, message: String }],
+        errors: [{
+            row: Number, message: String
+        }],
         duration_ms: Number,
         status: {
             type: String,

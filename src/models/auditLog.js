@@ -11,6 +11,7 @@ const auditLogSchema = new mongoose.Schema(
             type: String,
             required: true,
             enum: ["DELETE", "UPDATE", "CREATE"],
+            set: (v) => (v ? String(v).toUpperCase() : v), // normaliza a mayúsculas
         },
         entity_id: {
             type: mongoose.Schema.Types.Mixed,
@@ -29,7 +30,9 @@ const auditLogSchema = new mongoose.Schema(
             default: {},
         },
     },
-    { timestamps: true }
+    {
+        timestamps: true
+    }
 );
 
 auditLogSchema.index({ entity: 1, action: 1 });

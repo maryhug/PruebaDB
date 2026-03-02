@@ -28,10 +28,10 @@ async function start() {
     try {
         await connectMongo();
         app.listen(PORT, () => {
-            console.log(`Server running on http://localhost:${PORT}`);
+            console.log(`(OK) Server running on http://localhost:${PORT}`);
         });
     } catch (err) {
-        console.error("Failed to start server:", err);
+        console.error("(AHH!) Failed to start server:", err);
         process.exit(1);
     }
 }
