@@ -9,3 +9,4 @@ async function connectMongo() {
 }
 
 module.exports = connectMongo;
+exports.connectMongo = connectMongo;
