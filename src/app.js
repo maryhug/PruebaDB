@@ -5,8 +5,8 @@ const connectMongo = require("./config/mongodb");
 const errorHandler = require("./middleware/errorHandler");
 
 const migrationRoutes = require("./routes/migration");
-// const productRoutes   = require("./routes/products");
-// const reportRoutes    = require("./routes/reports");
+const productRoutes   = require("./routes/products");
+const reportRoutes    = require("./routes/reports");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,8 +19,8 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.use("/api/migration", migrationRoutes);
-// app.use("/api/products",  productRoutes);
-// app.use("/api/reports",   reportRoutes);
+app.use("/api/products",  productRoutes);
+app.use("/api/reports",   reportRoutes);
 
 app.use(errorHandler);
 
