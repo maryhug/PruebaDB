@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { runMigration } = require("../controllers/migrationController");
+const { runMigration } = require("../services/migrationService");
 
 const router = Router();
 

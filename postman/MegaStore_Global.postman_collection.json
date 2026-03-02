@@ -1,0 +1,159 @@
+{
+  "info": {
+    "name": "MegaStore Global API",
+    "description": "Complete API collection for MegaStore Global — PostgreSQL + MongoDB",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000/api" }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "GET /api/health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Migration",
+      "item": [
+        {
+          "name": "POST /api/migration — Run CSV Migration",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/migration", "host": ["{{baseUrl}}"], "path": ["migration"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products (CRUD)",
+      "item": [
+        {
+          "name": "GET /api/products — List All",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] }
+          }
+        },
+        {
+          "name": "GET /api/products — Filter by category",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/products?category=Electronics",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [{ "key": "category", "value": "Electronics" }]
+            }
+          }
+        },
+        {
+          "name": "GET /api/products/:id — Get One",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/products/1", "host": ["{{baseUrl}}"], "path": ["products", "1"] }
+          }
+        },
+        {
+          "name": "POST /api/products — Create",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"NEW-SKU-001\",\n  \"name\": \"New Test Product\",\n  \"unit_price\": 99000,\n  \"id_category\": 1,\n  \"id_supplier\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT /api/products/:id — Update",
+          "request": {
+            "method": "PUT",
+            "url": { "raw": "{{baseUrl}}/products/1", "host": ["{{baseUrl}}"], "path": ["products", "1"] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Product Name\",\n  \"unit_price\": 199000\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE /api/products/:id — Delete (+ Audit Log)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/products/1", "host": ["{{baseUrl}}"], "path": ["products", "1"] },
+            "header": [{ "key": "x-user", "value": "admin@megastore.com" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports (Business Intelligence)",
+      "item": [
+        {
+          "name": "GET /api/reports/suppliers — Supplier Analysis",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/reports/suppliers", "host": ["{{baseUrl}}"], "path": ["reports", "suppliers"] }
+          }
+        },
+        {
+          "name": "GET /api/reports/customers/:id/history — Customer History",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/reports/customers/1/history", "host": ["{{baseUrl}}"], "path": ["reports", "customers", "1", "history"] }
+          }
+        },
+        {
+          "name": "GET /api/reports/top-products?category=Electronics",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reports/top-products?category=Electronics",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "top-products"],
+              "query": [{ "key": "category", "value": "Electronics" }]
+            }
+          }
+        },
+        {
+          "name": "GET /api/reports/top-products?category=Accessories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reports/top-products?category=Accessories",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "top-products"],
+              "query": [{ "key": "category", "value": "Accessories" }]
+            }
+          }
+        },
+        {
+          "name": "GET /api/reports/audit-logs — View Audit Logs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reports/audit-logs?entity=product&action=DELETE",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "audit-logs"],
+              "query": [
+                { "key": "entity", "value": "product" },
+                { "key": "action", "value": "DELETE" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

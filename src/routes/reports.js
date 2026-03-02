@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const ctrl = require("../controllers/reportController");
+const ctrl = require("../services/reportService");
 
 const router = Router();
 

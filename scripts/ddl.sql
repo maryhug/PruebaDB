@@ -1,9 +1,3 @@
--- ============================================================
--- MegaStore Global — DDL Script (PostgreSQL)
--- Database: db_megastore_exam
--- Run: psql -U postgres -d db_megastore_exam -f ddl.sql
--- ============================================================
-
 -- Drop tables if re-running (order matters due to FK constraints)
 DROP TABLE IF EXISTS order_items CASCADE;
 DROP TABLE IF EXISTS orders     CASCADE;
@@ -87,6 +81,7 @@ CREATE TABLE order_items (
     created_at      TIMESTAMP DEFAULT NOW()
 );
 
+
 -- ============================================================
 -- Indexes for query performance
 -- ============================================================
@@ -96,10 +91,10 @@ CREATE INDEX idx_orders_customer     ON orders(id_customer);
 CREATE INDEX idx_order_items_order   ON order_items(id_order);
 CREATE INDEX idx_order_items_product ON order_items(id_product);
 
+
 -- ============================================================
 -- Views
 -- ============================================================
-
 CREATE OR REPLACE VIEW vw_product_revenue AS
 SELECT
 p.id_product,

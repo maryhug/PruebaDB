@@ -8,7 +8,8 @@ const SQL_BASE = `
   FROM products p
   JOIN categories c ON c.id_category = p.id_category
   JOIN suppliers  s ON s.id_supplier = p.id_supplier
-`;
+`
+;
 
 async function getAll(req, res, next) {
     try {

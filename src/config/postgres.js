@@ -12,4 +12,15 @@ pool.on("error", (err) => {
     process.exit(1);
 });
 
+(async () => {
+    try {
+        const client = await pool.connect();
+        await client.query('SELECT 1');
+        console.log('Postgres connected successfully.');
+        client.release();
+    } catch (err) {
+        console.error('Unable to connect to Postgres', err);
+        process.exit(1);
+    }
+})();
 module.exports = pool;
