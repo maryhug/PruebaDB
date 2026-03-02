@@ -1,0 +1,36 @@
+{
+  "name": "pruebadb",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "npx nodemon src/server.js",
+    "migrate": "node scripts/run-migration.js",
+    "reset": "node scripts/reset.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maryhug/PruebaDB.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/maryhug/PruebaDB/issues"
+  },
+  "homepage": "https://github.com/maryhug/PruebaDB#readme",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "csv-parse": "^6.1.0",
+    "csv-parser": "^3.2.0",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "mongodb": "^7.1.0",
+    "mongoose": "^9.2.3",
+    "pg": "^8.19.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
